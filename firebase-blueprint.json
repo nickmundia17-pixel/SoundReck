@@ -1,0 +1,314 @@
+{
+  "entities": {
+    "CreatorProfile": {
+      "title": "CreatorProfile",
+      "description": "Public creator profile for an artist, content creator, or DJ with BuymeSoda handle.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "role": {
+          "type": "string",
+          "enum": ["artist", "creator", "dj"]
+        },
+        "buyMeSodaHandle": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "bio": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "role", "createdAt", "updatedAt"]
+    },
+    "CreatorPrivateInfo": {
+      "title": "CreatorPrivateInfo",
+      "description": "Isolated private PII and connected social handles for a user.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "instagramHandle": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "facebookPage": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "tiktokHandle": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "whatsappNumber": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "updatedAt"]
+    },
+    "MusicProject": {
+      "title": "MusicProject",
+      "description": "Saved lyrics, beat settings, and voice alignment notes created in Music Creation or DAW.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "genre": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "bpm": {
+          "type": "number"
+        },
+        "lyrics": {
+          "type": "string",
+          "maxLength": 8000
+        },
+        "alignmentNotes": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "kitName": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "title", "genre", "bpm", "createdAt", "updatedAt"]
+    },
+    "SocialCampaign": {
+      "title": "SocialCampaign",
+      "description": "Saved social media content creation draft targeted to Instagram, Facebook, TikTok, or WhatsApp.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "platform": {
+          "type": "string",
+          "enum": ["instagram", "facebook", "tiktok", "whatsapp"]
+        },
+        "headline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "caption": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2200
+        },
+        "trackTitle": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "platform", "headline", "caption", "createdAt"]
+    },
+    "SodaSupport": {
+      "title": "SodaSupport",
+      "description": "BuymeSoda support pledge from a fan or creator to an artist, content creator, or webapp owner.",
+      "type": "object",
+      "properties": {
+        "supporterId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "supporterName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "recipientHandle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "recipientRole": {
+          "type": "string",
+          "enum": ["artist", "creator", "dj", "owner"]
+        },
+        "sodaCount": {
+          "type": "integer"
+        },
+        "amountUsd": {
+          "type": "number"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 280
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["supporterId", "supporterName", "recipientHandle", "recipientRole", "sodaCount", "amountUsd", "createdAt"]
+    },
+    "PadSampleAssignment": {
+      "title": "PadSampleAssignment",
+      "description": "Custom Discover audio sample assignment mapped to a specific Music Creation beat pad.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "padId": {
+          "type": "string",
+          "enum": [
+            "kick808",
+            "snare",
+            "clap",
+            "hihatClosed",
+            "hihatOpen",
+            "logDrum",
+            "rimshot",
+            "shaker",
+            "subBass",
+            "rhodesC",
+            "rhodesF",
+            "rhodesG",
+            "pluck",
+            "brass",
+            "airhorn",
+            "scratch"
+          ]
+        },
+        "sampleName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": ["catalog", "custom_audio"]
+        },
+        "sourceTrackId": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "grooveStyle": {
+          "type": "string",
+          "enum": ["afro", "house", "trap"]
+        },
+        "bpm": {
+          "type": "number"
+        },
+        "sliceStartSec": {
+          "type": "number"
+        },
+        "sliceDurationSec": {
+          "type": "number"
+        },
+        "audioBase64": {
+          "type": "string",
+          "maxLength": 300000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "padId",
+        "sampleName",
+        "sourceType",
+        "sourceTrackId",
+        "grooveStyle",
+        "bpm",
+        "sliceStartSec",
+        "sliceDurationSec",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/CreatorProfile" },
+      "description": "Public creator profiles indexed by UID."
+    },
+    "/users/{userId}/private/info": {
+      "schema": { "$ref": "#/entities/CreatorPrivateInfo" },
+      "description": "Isolated PII and private social handles accessible only by the owner."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/MusicProject" },
+      "description": "User-owned music projects, lyrics, and beat/alignment sessions."
+    },
+    "/social_campaigns/{campaignId}": {
+      "schema": { "$ref": "#/entities/SocialCampaign" },
+      "description": "User-owned social hub content campaigns for IG, FB, TikTok, and WhatsApp."
+    },
+    "/soda_supports/{supportId}": {
+      "schema": { "$ref": "#/entities/SodaSupport" },
+      "description": "BuymeSoda support pledges for artists, creators, DJs, and the webapp owner."
+    },
+    "/pad_assignments/{assignmentId}": {
+      "schema": { "$ref": "#/entities/PadSampleAssignment" },
+      "description": "Per-user custom Discover sample assignments mapped to beat pads."
+    }
+  }
+}

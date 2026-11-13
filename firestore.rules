@@ -1,0 +1,236 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && (
+        request.auth.token.email_verified == true ||
+        request.auth.token.phone_number != null
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'nickmundia17@gmail.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidCreatorProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'role', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'role', 'buyMeSodaHandle', 'bio', 'createdAt', 'updatedAt'])
+        && data.uid is string && data.uid == request.auth.uid && isValidId(data.uid)
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80
+        && data.role is string && data.role in ['artist', 'creator', 'dj']
+        && (!('buyMeSodaHandle' in data) || (data.buyMeSodaHandle is string && data.buyMeSodaHandle.size() <= 80))
+        && (!('bio' in data) || (data.bio is string && data.bio.size() <= 300))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPrivateInfo(data) {
+      return data.keys().hasAll(['uid', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'phone', 'instagramHandle', 'facebookPage', 'tiktokHandle', 'whatsappNumber', 'updatedAt'])
+        && data.uid is string && data.uid == request.auth.uid && isValidId(data.uid)
+        && (!('email' in data) || (data.email is string && data.email.size() <= 160))
+        && (!('phone' in data) || (data.phone is string && data.phone.size() <= 40))
+        && (!('instagramHandle' in data) || (data.instagramHandle is string && data.instagramHandle.size() <= 80))
+        && (!('facebookPage' in data) || (data.facebookPage is string && data.facebookPage.size() <= 120))
+        && (!('tiktokHandle' in data) || (data.tiktokHandle is string && data.tiktokHandle.size() <= 80))
+        && (!('whatsappNumber' in data) || (data.whatsappNumber is string && data.whatsappNumber.size() <= 40))
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidMusicProject(data) {
+      return data.keys().hasAll(['ownerId', 'title', 'genre', 'bpm', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'title', 'genre', 'bpm', 'lyrics', 'alignmentNotes', 'kitName', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == request.auth.uid && isValidId(data.ownerId)
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 120
+        && data.genre is string && data.genre.size() >= 1 && data.genre.size() <= 60
+        && data.bpm is number && data.bpm >= 40 && data.bpm <= 240
+        && (!('lyrics' in data) || (data.lyrics is string && data.lyrics.size() <= 8000))
+        && (!('alignmentNotes' in data) || (data.alignmentNotes is string && data.alignmentNotes.size() <= 4000))
+        && (!('kitName' in data) || (data.kitName is string && data.kitName.size() <= 60))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidSocialCampaign(data) {
+      return data.keys().hasAll(['ownerId', 'platform', 'headline', 'caption', 'createdAt'])
+        && data.keys().hasOnly(['ownerId', 'platform', 'headline', 'caption', 'trackTitle', 'createdAt'])
+        && data.ownerId is string && data.ownerId == request.auth.uid && isValidId(data.ownerId)
+        && data.platform is string && data.platform in ['instagram', 'facebook', 'tiktok', 'whatsapp']
+        && data.headline is string && data.headline.size() >= 1 && data.headline.size() <= 140
+        && data.caption is string && data.caption.size() >= 1 && data.caption.size() <= 2200
+        && (!('trackTitle' in data) || (data.trackTitle is string && data.trackTitle.size() <= 120))
+        && data.createdAt is timestamp;
+    }
+
+    function isValidSodaSupport(data) {
+      return data.keys().hasAll(['supporterId', 'supporterName', 'recipientHandle', 'recipientRole', 'sodaCount', 'amountUsd', 'createdAt'])
+        && data.keys().hasOnly(['supporterId', 'supporterName', 'recipientHandle', 'recipientRole', 'sodaCount', 'amountUsd', 'message', 'createdAt'])
+        && data.supporterId is string && data.supporterId == request.auth.uid && isValidId(data.supporterId)
+        && data.supporterName is string && data.supporterName.size() >= 1 && data.supporterName.size() <= 80
+        && data.recipientHandle is string && data.recipientHandle.size() >= 1 && data.recipientHandle.size() <= 80
+        && data.recipientRole is string && data.recipientRole in ['artist', 'creator', 'dj', 'owner']
+        && data.sodaCount is int && data.sodaCount >= 1 && data.sodaCount <= 100
+        && data.amountUsd is number && data.amountUsd >= 1 && data.amountUsd <= 1000
+        && (!('message' in data) || (data.message is string && data.message.size() <= 280))
+        && data.createdAt is timestamp;
+    }
+
+    function isValidPadAssignment(data) {
+      return data.keys().hasAll(['ownerId', 'padId', 'sampleName', 'sourceType', 'sourceTrackId', 'grooveStyle', 'bpm', 'sliceStartSec', 'sliceDurationSec', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'padId', 'sampleName', 'sourceType', 'sourceTrackId', 'grooveStyle', 'bpm', 'sliceStartSec', 'sliceDurationSec', 'audioBase64', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId == request.auth.uid && isValidId(data.ownerId)
+        && data.padId is string && data.padId in ['kick808', 'snare', 'clap', 'hihatClosed', 'hihatOpen', 'logDrum', 'rimshot', 'shaker', 'subBass', 'rhodesC', 'rhodesF', 'rhodesG', 'pluck', 'brass', 'airhorn', 'scratch']
+        && data.sampleName is string && data.sampleName.size() >= 1 && data.sampleName.size() <= 120
+        && data.sourceType is string && data.sourceType in ['catalog', 'custom_audio']
+        && data.sourceTrackId is string && data.sourceTrackId.size() >= 1 && data.sourceTrackId.size() <= 80
+        && data.grooveStyle is string && data.grooveStyle in ['afro', 'house', 'trap']
+        && data.bpm is number && data.bpm >= 40 && data.bpm <= 240
+        && data.sliceStartSec is number && data.sliceStartSec >= 0 && data.sliceStartSec <= 600
+        && data.sliceDurationSec is number && data.sliceDurationSec >= 0.1 && data.sliceDurationSec <= 8
+        && (!('audioBase64' in data) || (data.audioBase64 is string && data.audioBase64.size() <= 300000))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isSignedIn();
+      allow list: if isSignedIn() && existing().uid is string;
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && isVerifiedUser()
+        && isValidCreatorProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isValidCreatorProfile(incoming())
+        && (isAdmin() || (
+          isOwner(userId)
+          && isVerifiedUser()
+          && incoming().uid == existing().uid
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'role', 'buyMeSodaHandle', 'bio', 'updatedAt'])
+        ));
+      allow delete: if isValidId(userId) && (isOwner(userId) || isAdmin());
+
+      match /private/info {
+        allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+        allow create: if isValidId(userId)
+          && isOwner(userId)
+          && isVerifiedUser()
+          && isValidPrivateInfo(incoming())
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId)
+          && isValidPrivateInfo(incoming())
+          && (isOwner(userId) || isAdmin())
+          && isVerifiedUser()
+          && incoming().uid == existing().uid
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'phone', 'instagramHandle', 'facebookPage', 'tiktokHandle', 'whatsappNumber', 'updatedAt']);
+        allow delete: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      }
+    }
+
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId) && isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isValidId(projectId)
+        && isVerifiedUser()
+        && isValidMusicProject(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(projectId)
+        && isValidMusicProject(incoming())
+        && (isAdmin() || (
+          isVerifiedUser()
+          && existing().ownerId == request.auth.uid
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'genre', 'bpm', 'lyrics', 'alignmentNotes', 'kitName', 'updatedAt'])
+        ));
+      allow delete: if isValidId(projectId) && isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    match /social_campaigns/{campaignId} {
+      allow get: if isValidId(campaignId) && isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isValidId(campaignId)
+        && isVerifiedUser()
+        && isValidSocialCampaign(incoming())
+        && incoming().createdAt == request.time;
+      allow update: if false;
+      allow delete: if isValidId(campaignId) && isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    match /soda_supports/{supportId} {
+      allow get: if isValidId(supportId) && isSignedIn();
+      allow list: if isSignedIn() && existing().supporterId == request.auth.uid;
+      allow create: if isValidId(supportId)
+        && isVerifiedUser()
+        && isValidSodaSupport(incoming())
+        && incoming().createdAt == request.time;
+      allow update: if false;
+      allow delete: if isValidId(supportId) && isAdmin();
+    }
+
+    match /pad_assignments/{assignmentId} {
+      allow get: if isValidId(assignmentId) && isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isValidId(assignmentId)
+        && isVerifiedUser()
+        && isValidPadAssignment(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(assignmentId)
+        && isValidPadAssignment(incoming())
+        && (isAdmin() || (
+          isVerifiedUser()
+          && existing().ownerId == request.auth.uid
+          && incoming().ownerId == existing().ownerId
+          && incoming().padId == existing().padId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'sampleName',
+            'sourceType',
+            'sourceTrackId',
+            'grooveStyle',
+            'bpm',
+            'sliceStartSec',
+            'sliceDurationSec',
+            'audioBase64',
+            'updatedAt'
+          ])
+        ));
+      allow delete: if isValidId(assignmentId) && isSignedIn() && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+  }
+}

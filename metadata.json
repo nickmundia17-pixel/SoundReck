@@ -1,0 +1,10 @@
+{
+  "name": "SoundDeck Studio",
+  "description": "All-in-one dark-mode music workspace for artists, content creators, and DJs featuring AI lyrics & voice alignment, beat pads, multi-track DAW with Audacity bridge, Virtual DJ console, Social Hub, Discover & BuymeSoda creator support.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
